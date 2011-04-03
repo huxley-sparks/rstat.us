@@ -16,17 +16,18 @@ class Rstatus
       # verify that the random token is the same as when we
       # subscribed with the hub initially and that the topic
       # url matches what we expect
-      #verified = params['hub.topic'] == feed.url
-      #if verified and sub.verify_subscription(params['hub.verify_token'])
-      #  if development?
-      #    puts "Verified"
-      #  end
-      #  body respond[:body]
-      #  status respond[:status]
-      #else
-      #  if development?
-      #    puts "Verification Failed"
-      #  end
+=begin
+      if verified and sub.verify_subscription(params['hub.verify_token'])
+        if development?
+          puts "Verified"
+        end
+        body respond[:body]
+        status respond[:status]
+      else
+        if development?
+          puts "Verification Failed"
+        end
+=end
         # if the verification fails, the specification forces us to
         # return a 404 status
         status 404
