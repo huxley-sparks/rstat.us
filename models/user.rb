@@ -1,3 +1,8 @@
+# The User model contains all of the information that a particular user of our
+# site needs: their username/password, etc. It all comes from here. Even users
+# that sign up via Twitter get a User model, though it's a bit empty in that
+# particular case.
+
 class User
   require 'digest/md5'
 
@@ -10,22 +15,25 @@ class User
   key :email, String #, :unique => true, :allow_nil => true
 
   # eff you mongo_mapper.
+  
   validates_uniqueness_of :email, :allow_nil => :true 
   validates_uniqueness_of :username, :allow_nil => :true 
-
+  
+  #why should the username be longer than the update?
+  #Twitter has 15, let's be different
+  validates_length_of :username, :minimum => 1, :maximum => 16
+  
   # validate users don't have @ in their usernames
   validate :no_special_chars
-
+  
   belongs_to :author
   belongs_to :feed
 
   after_create :finalize
 
-  # After a user is created create the feed, add yourself as a follower and
-  # reset the token
+  # After a user is created, create the feed and reset the token
   def finalize
     create_feed
-    follow_yo_self
     reset_perishable_token
   end
 
@@ -91,6 +99,11 @@ class User
       f = Feed.first(:id => feed_id)
     end
 
+    # can't follow yourself
+    if f == self.feed
+      return
+    end
+
     if f.nil?
       f = Feed.create(:remote_url => feed_url)
       f.populate
@@ -114,6 +127,7 @@ class User
     save
     if followed_feed.local?
       followee = User.first(:author_id => followed_feed.author.id)
+      return if followee.nil?
       followee.followers_ids.delete(self.feed.id)
       followee.save
     end
@@ -142,7 +156,10 @@ class User
       :page => params[:page],
       :per_page => params[:per_page]
     }
-    Update.where(:author_id => following.map(&:author_id)).order(['created_at', 'descending']).paginate(popts)
+
+    following_plus_me = following.clone
+    following_plus_me << self.feed
+    Update.where(:author_id => following_plus_me.map(&:author_id)).order(['created_at', 'descending']).paginate(popts)
   end
 
   def at_replies(params)
@@ -211,12 +228,6 @@ class User
     )
 
     self.feed = f
-    save
-  end
-
-  def follow_yo_self
-    following << feed
-    followers << feed
     save
   end
 

@@ -1,9 +1,9 @@
 require 'require_relative' if RUBY_VERSION[0,3] == '1.8'
-require_relative 'test_helper'
+require_relative 'acceptance_helper'
 
 class RstatusAuthTest < MiniTest::Unit::TestCase
 
-  include TestHelper
+  include AcceptanceHelper
 
   # -- Extra assertions and helper methods:
 
@@ -54,12 +54,12 @@ class RstatusAuthTest < MiniTest::Unit::TestCase
 
   def test_twitter_remove
     log_in_new_twitter_user
-  
+
     visit "/users/#{@u.username}/edit"
-  
+
     assert_match /edit/, page.current_url
     click_button "Remove"
-  
+
     a = Authorization.first(:provider => "twitter", :user_id => @u.id)
     assert a.nil?
   end
@@ -80,12 +80,12 @@ class RstatusAuthTest < MiniTest::Unit::TestCase
 
   def test_facebook_remove
     log_in_new_fb_user
-  
+
     visit "/users/#{@u.username}/edit"
-  
+
     assert_match /edit/, page.current_url
     click_button "Remove"
-  
+
     a = Authorization.first(:provider => "facebook", :user_id => @u.id)
     assert a.nil?
   end
@@ -217,7 +217,7 @@ class RstatusAuthTest < MiniTest::Unit::TestCase
   end
 
   def test_facebook_username
-    new_user = Factory.build(:user, :username => 'profile.php?id=12345')
+    new_user = Factory.build(:user, :username => 'profile.php?id=1')
     log_in_fb(new_user)
     assert_match /users\/new/, page.current_url, "not on the new user page."
 
@@ -232,7 +232,7 @@ class RstatusAuthTest < MiniTest::Unit::TestCase
 
   def test_existing_profile_php_rename_user
     #stubbed to allow testing with new username validation
-    existing_user = Factory.build(:user, :username => 'profile.php?id=12345')
+    existing_user = Factory.build(:user, :username => 'profile.php?id=1')
     existing_user.expects(:no_special_chars).at_least_once.returns(true)
     existing_user.save
     a = Factory(:authorization, :user => existing_user)
@@ -265,7 +265,7 @@ class RstatusAuthTest < MiniTest::Unit::TestCase
     u = Factory(:user)
     a = Factory(:authorization, :user => u, :oauth_token => nil, :oauth_secret => nil, :nickname => nil)
     log_in(u, a.uid)
-  
+
     assert_equal "1234", u.twitter.oauth_token
     assert_equal "4567", u.twitter.oauth_secret
     assert_equal u.username, u.twitter.nickname

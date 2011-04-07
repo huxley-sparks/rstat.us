@@ -138,7 +138,7 @@ class Rstatus
     if user.nil?
       #check for a case insensitive match and then redirect to the correct address
       username = Regexp.escape(params[:username])
-      user = User.first("$where" => "this.username.match(/#{username}/i)")
+      user = User.first :username => /^#{username}$/i
       if user.nil?
         raise Sinatra::NotFound
       else
@@ -201,7 +201,7 @@ class Rstatus
 
     #build title
     title = ""
-    title << "#{@user.username}'s Following"
+    title << "#{@user.username} is following"
     
     haml :"users/list", :locals => {:title => title}
   end
@@ -227,7 +227,7 @@ class Rstatus
 
     #build title
     title = ""
-    title << "#{@user.username}'s Followers"
+    title << "#{@user.username}'s followers"
 
     haml :"users/list", :locals => {:title => title}
   end
