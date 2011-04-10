@@ -30,6 +30,12 @@ class UserTest < MiniTest::Unit::TestCase
     refute u.save
   end
 
+  def test_username_is_unique_case_insensitive
+    Factory(:user, :username => "steve")
+    u = Factory.build(:user, :username => "Steve")
+    refute u.save
+  end
+  
   def test_username_is_too_long
     u = User.new :username => "burningTyger_will_fail_with_this_username"
     refute u.save
@@ -78,7 +84,7 @@ class UserTest < MiniTest::Unit::TestCase
   end
 
   def test_no_special_chars_in_usernames
-    ["something@something.com", "another'quirk", ".boundary_case.", "another..case", "another/random\\test", "yet]another", ".Ὁμηρος"].each do |i|
+    ["something@something.com", "another'quirk", ".boundary_case.", "another..case", "another/random\\test", "yet]another", ".Ὁμηρος", "I have spaces"].each do |i|
       u = User.new :username => i
       refute u.save, "contains restricted characters."
     end
